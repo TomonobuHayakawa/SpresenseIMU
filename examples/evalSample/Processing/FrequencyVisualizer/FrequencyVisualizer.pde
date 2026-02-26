@@ -178,11 +178,13 @@ void loadRawLog(String path) {
   loadedFilePath = path;
   resetData();
 
+  String[] payload = extractPayloadLines(lines);
+
   FloatList timestamps = new FloatList();
   int invalidLines = 0;
 
-  for (int i = 0; i < lines.length; i++) {
-    String line = trim(lines[i]);
+  for (int i = 0; i < payload.length; i++) {
+    String line = trim(payload[i]);
     if (line.length() == 0 || line.startsWith("===") || line.startsWith("Capture") || line.startsWith("Start") || line.startsWith("Dump")) {
       continue;
     }
@@ -224,6 +226,49 @@ void loadRawLog(String path) {
   runFftAndStats();
   computeSixAxisSpectra();
   statusText = "Loaded raw CSV: samples=" + signal.size() + ", parsed=" + parsedLines + ", skipped=" + invalidLines;
+}
+
+String[] extractPayloadLines(String[] lines) {
+  if (lines == null || lines.length == 0) {
+    return new String[0];
+  }
+
+  int start = 0;
+  int end = lines.length;
+
+  for (int i = 0; i < lines.length; i++) {
+    String line = trim(lines[i]);
+    if (line.startsWith("Dump start")) {
+      start = i + 1;
+      break;
+    }
+  }
+
+  for (int i = start; i < lines.length; i++) {
+    String line = trim(lines[i]);
+    if (line.startsWith("Dump end")) {
+      end = i;
+      break;
+    }
+  }
+
+  for (int i = start; i < end; i++) {
+    String line = trim(lines[i]).toLowerCase();
+    if (line.startsWith("timestamp,temp,ax,ay,az,gx,gy,gz")) {
+      start = i + 1;
+      break;
+    }
+  }
+
+  if (start < 0) start = 0;
+  if (end > lines.length) end = lines.length;
+  if (start >= end) return new String[0];
+
+  String[] out = new String[end - start];
+  for (int i = start; i < end; i++) {
+    out[i - start] = lines[i];
+  }
+  return out;
 }
 
 float[] parseImuLine(String line) {

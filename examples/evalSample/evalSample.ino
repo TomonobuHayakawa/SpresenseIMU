@@ -20,18 +20,73 @@
 #include "SpresenseIMU.h"
 
 // ====== Settings ======
-#define SAMPLINGRATE   (1920)   // Hz
-#define ADRANGE        (4)      // [G]
-#define GDRANGE        (500)    // [dps]
-#define FIFO_DEPTH     (1)      // FIFO depth
+#define SAMPLINGRATE      (1920)   // Hz
+#define ADRANGE           (4)      // [G]
+#define GDRANGE           (500)    // [dps]
+#define FIFO_DEPTH        (1)      // FIFO depth
 
-#define RECORD_SEC     (3)
-#define MAX_SAMPLES    (SAMPLINGRATE * RECORD_SEC)
+#define RECORD_SEC        (3)
+#define MAX_SAMPLES       (SAMPLINGRATE * RECORD_SEC)
+
+// ====== Calibration settings ======
+#define STARTUP_SETTLE_MS (3000)
+#define CALIBRATION_MS    (3000)
+#define PRE_CAPTURE_WAIT_MS (5000)
 
 // ====== Buffer ======
 static pwbImuData g_buf[MAX_SAMPLES];
 static int g_count = 0;
 static bool g_done = false;
+
+static float g_gyroBias[3] = {0.0f, 0.0f, 0.0f};
+static float g_trueGravity = 0.0f;
+
+static void calibrateBiasAndGravity(int ms)
+{
+  printf("Keep still for calibration (%d ms)...\n", ms);
+
+  double sumGx = 0.0;
+  double sumGy = 0.0;
+  double sumGz = 0.0;
+  double sumAx = 0.0;
+  double sumAy = 0.0;
+  double sumAz = 0.0;
+  int count = 0;
+
+  unsigned long start = millis();
+  while ((millis() - start) < (unsigned long)ms) {
+    pwbImuData d;
+    if (!SpresenseIMU.get(d)) {
+      continue;
+    }
+
+    sumGx += d.data.gx;
+    sumGy += d.data.gy;
+    sumGz += d.data.gz;
+    sumAx += d.data.ax;
+    sumAy += d.data.ay;
+    sumAz += d.data.az;
+    count++;
+  }
+
+  if (count <= 0) {
+    printf("[WARN] calibration skipped (no samples)\n");
+    return;
+  }
+
+  g_gyroBias[0] = (float)(sumGx / (double)count);
+  g_gyroBias[1] = (float)(sumGy / (double)count);
+  g_gyroBias[2] = (float)(sumGz / (double)count);
+
+  float ax = (float)(sumAx / (double)count);
+  float ay = (float)(sumAy / (double)count);
+  float az = (float)(sumAz / (double)count);
+  g_trueGravity = sqrtf(ax * ax + ay * ay + az * az);
+
+  printf("[Calibration Done] count=%d\n", count);
+  printf("gyro_bias,%f,%f,%f\n", g_gyroBias[0], g_gyroBias[1], g_gyroBias[2]);
+  printf("gravity_mag,%f\n", g_trueGravity);
+}
 
 void setup(void)
 {
@@ -58,7 +113,12 @@ void setup(void)
     return;
   }
 
-  printf("=== eval_sample ===\n");
+  delay(STARTUP_SETTLE_MS);
+  calibrateBiasAndGravity(CALIBRATION_MS);
+  printf("Waiting before capture (%d ms)...\n", PRE_CAPTURE_WAIT_MS);
+  delay(PRE_CAPTURE_WAIT_MS);
+
+  printf("=== eval_sample (with startup calibration) ===\n");
   printf("Capture: %d Hz x %d sec => %d samples\n", SAMPLINGRATE, RECORD_SEC, MAX_SAMPLES);
   printf("Start capture...\n");
 }
@@ -101,4 +161,3 @@ void loop(void)
     }
   }
 }
-
