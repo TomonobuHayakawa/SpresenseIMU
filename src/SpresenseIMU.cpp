@@ -266,22 +266,48 @@ bool SpresenseImuClass::getAverage(pwbImuData& data, int count)
 /****************************************************************************
  * convert quaternion data
  ****************************************************************************/
-void SpresenseImuClass::convQuaternion(pwbQuaternionData& data, const cxd5602pwbimu_data_t& raw, float prevTimestamp)
+void SpresenseImuClass::convQuaternion(pwbQuaternionData& data,
+                                       const cxd5602pwbimu_data_t& raw,
+                                       float prevTimestamp,
+                                       bool microNoiseFilter)
 {
+  float delta = 0.0f;
+  if (prevTimestamp > 0.0f) {
+    const float timestampWrap = 4294967296.0f / 19200000.0f;
+    float prevWrapped = fmodf(prevTimestamp, timestampWrap);
+    delta = (raw.timestamp / 19200000.0f) - prevWrapped;
+    if (delta < 0.0f) {
+      delta += timestampWrap;
+    }
+  }
 
+  convQuaternionWithDelta(data, raw, delta, microNoiseFilter);
+}
+
+void SpresenseImuClass::convQuaternionWithDelta(pwbQuaternionData& data,
+                                                const cxd5602pwbimu_data_t& raw,
+                                                float delta,
+                                                bool microNoiseFilter)
+{
   double omega = sqrt(raw.gx*raw.gx + raw.gy*raw.gy + raw.gz*raw.gz);
-  float delta = (raw.timestamp / 19200000.0f) - prevTimestamp;
-
   data.timestamp = raw.timestamp;
   data.temp = raw.temp;
 
-  if (omega < 1e-12) {
+  if (microNoiseFilter && (omega < 1e-12 || delta <= 0.0f)) {
     data.q0 = 1.0;
     data.q1 = data.q2 = data.q3 = 0.0;
     return;
   }
 
-  double theta = omega * delta;
+  if (omega < 1e-12) {
+    data.q0 = 1.0;
+    data.q1 = 0.5f * raw.gx * delta;
+    data.q2 = 0.5f * raw.gy * delta;
+    data.q3 = 0.5f * raw.gz * delta;
+    return;
+  }
+
+  double theta = omega * (double)delta;
   double half  = theta * 0.5;
   double s = sin(half) / omega;
 

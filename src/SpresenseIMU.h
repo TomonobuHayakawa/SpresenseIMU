@@ -246,7 +246,10 @@ public:
   bool get(pwbImuData*, int);
   bool getAverage(pwbImuData&, int);
 
-  void convQuaternion(pwbQuaternionData& data, const cxd5602pwbimu_data_t& raw, float prevTimestamp);
+  void convQuaternion(pwbQuaternionData& data, const cxd5602pwbimu_data_t& raw,
+                      float prevTimestamp, bool microNoiseFilter = true);
+  void convQuaternionWithDelta(pwbQuaternionData& data, const cxd5602pwbimu_data_t& raw,
+                               float delta, bool microNoiseFilter = true);
 
   int calcEarthsRotation(pwbGyroData* gavgs, int num, pwbGyroData *bias_out);
   double calcAngleFrX(pwbGyroData&, pwbGyroData&);
