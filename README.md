@@ -199,35 +199,59 @@ API一覧
 
 ## 💾 サンプル一覧
 
-### Spresense 単体でのサンプル
+現在、サンプルは以下の3カテゴリに再編されています。
+
+- `examples/singleCore/`
+- `examples/multiCore/`
+- `examples/withProcessing/viaUSBSerial/`
+
+### singleCore (`examples/singleCore/`)
 
 | サンプル | 内容 |
 |-----------|------|
 | **compass** | ジャイロコンパスで方位角を表示 |
-| **compassMulti** | サブコアで動作するコンパスサンプル |
 | **sample** | Rawデータを取得してシリアル出力 |
-| **sample_multi** | サブコアでRawデータを並列取得 |
-| **rawStored** | 1920Hzでの高速Rawデータ保存（SDカード対応）|
-| **Orientation** | AHRSによる姿勢推定 |
+| **orientation** | AHRSによる姿勢推定 |
 | **tilt** | 加速度による傾き検出 |
+| **shareI2C** | マルチIMUと他センサーをI2Cで同時制御 |
 
-### **Processing連携** でのサンプル
- | PC上のProcessingで波形／姿勢／位置を可視化 |
+### multiCore (`examples/multiCore/`)
 
 | サンプル | 内容 |
 |-----------|------|
-| **sample** | Raw データの波形をPC上のProcessingで表示するサンプル |
-| **orientation** | 姿勢データをPC上のProcessingで可視化するサンプル|
-| **posithin** | 位置データをPC上のProcessingで可視化するサンプル|
+| **compass** | マルチコアで動作するコンパスサンプル（`MainCore` / `DispCore`） |
+| **sample** | マルチコアでRawデータを並列取得（`MainCore` / `ImuCore`） |
+| **rawStored** | 1920Hzでの高速Rawデータ保存（`MainCore` / `ImuCore`） |
+| **shareI2C** | I2C共有利用のマルチコア版（`MainCore` / `SubCore`） |
+
+### withProcessing (`examples/withProcessing/viaUSBSerial/`)
+
+Spresense側のwithProcessingサンプルは、`MainCore` と `ImuCore`（`position` は `PosCore` も含む）で構成されるマルチコア構成です。
+
+| サンプル | 内容 |
+|-----------|------|
+| **sample** | Rawデータ波形をProcessingで可視化 |
+| **orientation** | 姿勢データをProcessingで可視化 |
+| **position** | 位置データをProcessingで可視化（`MainCore` / `ImuCore` / `PosCore`） |
+| **evaluation** | 評価用サンプル（Spresense + Processing） |
+
+各withProcessingサンプルは以下に分かれています。
+
+- Spresense側: `Spresense/` 配下
+	- `sample`: `MainCore` + `ImuCore`
+	- `orientation`: `MainCore` + `ImuCore`
+	- `position`: `MainCore` + `ImuCore` + `PosCore`
+	- `evaluation`: `Spresense`（単体スケッチ）
+- PC側: `Processing/` 配下
 
 ## 🪶 保存データの表示ツール
 
 IMUボードのサンプル「rawStored」で保存されたバイナリデータは、
-付属の Python スクリプト **`imu_viewer.py`** を使用して人間が読める形式に変換できます。
+付属の Python スクリプト **`tool/imu_viewer.py`** を使用して人間が読める形式に変換できます。
 
 ### 🔧 使用方法
 ```bash
-python imu_viewer.py <データファイル名>
+python tool/imu_viewer.py <データファイル名>
 ```
 
 ### 📄 出力形式

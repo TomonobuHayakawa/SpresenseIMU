@@ -1,5 +1,5 @@
 /*
-  * evalSample.ino - Board evaluation sample
+ * Spresense.ino - Board evaluation sample on Spresense
  *  Author Interested-In-Spresense
  *
  *  This library is free software; you can redistribute it and/or
