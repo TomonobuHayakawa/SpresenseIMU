@@ -204,6 +204,7 @@ API一覧
 - `examples/singleCore/`
 - `examples/multiCore/`
 - `examples/withProcessing/viaUSBSerial/`
+- `examples/withProcessing/viaDebugSerial/`
 
 ### singleCore (`examples/singleCore/`)
 
@@ -224,25 +225,49 @@ API一覧
 | **rawStored** | 1920Hzでの高速Rawデータ保存（`MainCore` / `ImuCore`） |
 | **shareI2C** | I2C共有利用のマルチコア版（`MainCore` / `SubCore`） |
 
-### withProcessing (`examples/withProcessing/viaUSBSerial/`)
+### withProcessing: viaUSBSerial (`examples/withProcessing/viaUSBSerial/`)
 
-Spresense側のwithProcessingサンプルは、`MainCore` と `ImuCore`（`position` は `PosCore` も含む）で構成されるマルチコア構成です。
+Spresense側のwithProcessingサンプルは、`MainCore` と `ImuCore`（`position` は `PosCore` も含む）で構成されるマルチコア構成です。こちらはUSBシリアル出力版です。
 
 | サンプル | 内容 |
 |-----------|------|
 | **sample** | Rawデータ波形をProcessingで可視化 |
 | **orientation** | 姿勢データをProcessingで可視化 |
 | **position** | 位置データをProcessingで可視化（`MainCore` / `ImuCore` / `PosCore`） |
-| **evaluation** | 評価用サンプル（Spresense + Processing） |
+| **evaluation** | 評価用サンプル（Spresense + Processing。`FrequencyVisualizer` / `DcVisualizer` を含む） |
 
-各withProcessingサンプルは以下に分かれています。
-
-- Spresense側: `Spresense/` 配下
+- Spresense側: `Spresense/` は、以下のようになっています。
 	- `sample`: `MainCore` + `ImuCore`
 	- `orientation`: `MainCore` + `ImuCore`
 	- `position`: `MainCore` + `ImuCore` + `PosCore`
 	- `evaluation`: `Spresense`（単体スケッチ）
-- PC側: `Processing/` 配下
+- PC側: `Processing/` は、以下のようになっています。
+	- `sample`: `Processing.pde`
+	- `orientation`: `Graph/` + `Model/`
+	- `position`: `Graph/`
+	- `evaluation`: `FrequencyVisualizer/` + `DcVisualizer/`
+
+### withProcessing: viaDebugSerial (`examples/withProcessing/viaDebugSerial/`)
+
+構成はviaUSBSerial版と同一で、MainCoreの出力先のみデバッグポート（Serial）に変更した版です。
+
+| サンプル | 内容 |
+|-----------|------|
+| **sample** | Rawデータ波形をProcessingで可視化 |
+| **orientation** | 姿勢データをProcessingで可視化 |
+| **position** | 位置データをProcessingで可視化（`MainCore` / `ImuCore` / `PosCore`） |
+| **evaluation** | 評価用サンプル（Spresense + Processing。`FrequencyVisualizer` / `DcVisualizer` を含む） |
+
+- Spresense側: `Spresense/` は、以下のようになっています。
+	- `sample`: `MainCore` + `ImuCore`
+	- `orientation`: `MainCore` + `ImuCore`
+	- `position`: `MainCore` + `ImuCore` + `PosCore`
+	- `evaluation`: `Spresense`（単体スケッチ）
+- PC側: `Processing/` は、以下のようになっています。
+	- `sample`: `Processing.pde`
+	- `orientation`: `Graph/` + `Model/`
+	- `position`: `Graph/`
+	- `evaluation`: `FrequencyVisualizer/` + `DcVisualizer/`
 
 ## 🪶 保存データの表示ツール
 
