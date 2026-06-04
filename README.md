@@ -223,6 +223,7 @@ API一覧
 | **compass** | マルチコアで動作するコンパスサンプル（`MainCore` / `DispCore`） |
 | **sample** | マルチコアでRawデータを並列取得（`MainCore` / `ImuCore`） |
 | **rawStored** | 1920Hzでの高速Rawデータ保存（`MainCore` / `ImuCore`） |
+| **frequencyAnalyzer** | 周波数解析用サンプル（`MainCore` / `ImuCore` / `AnalyzeCore`） |
 | **shareI2C** | I2C共有利用のマルチコア版（`MainCore` / `SubCore`） |
 
 ### withProcessing: viaUSBSerial (`examples/withProcessing/viaUSBSerial/`)
